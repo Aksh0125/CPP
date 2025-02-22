@@ -1,0 +1,325 @@
+#include<iostream>
+#include<fstream>
+#include<string>
+using namespace std;
+class login{
+    int login_id;
+    int password;
+    public:
+    void input(){
+        cout<<"Enter Login id"<<endl;
+        cin>>login_id;
+    
+        cout<<"Enter Password"<<endl;
+        cin>>password;
+    }
+    void displaymsg(){
+        cout<<"SUCCESFULLY LOGGED INN"<<endl;
+    }
+    int retlogin(){
+        return login_id;
+    }
+    int retpass(){
+        return password;
+    }
+    
+};
+
+
+class todolist{
+    int t;
+    int op;
+    int id1;
+    string nname;
+    string notec;
+    public:
+    void disp(){
+        cout<<"Select from the following option-> "<<endl;
+        cout<<"1.ADD NOTE"<<endl;
+        cout<<"2.DELETE NOTE"<<endl;
+        cout<<"3.MODIFY NOTE"<<endl;
+        cout<<"4.DISPLAY NOTE"<<endl;
+        cout<<"0.EXIT"<<endl;
+        cin>>op;
+    }
+    int retop(){
+        return op;
+    }
+    int rpid(){
+        return id1;
+    }
+    void input1(){
+        cout<<"Enter Note Id"<<endl;
+        cin>>id1;
+        cin.ignore();
+        cout<<"Enter Note Name"<<endl;
+        getline(cin,nname);
+        cout<<"Enter Note Content"<<endl;
+        getline(cin,notec);
+    }
+    void display1(){
+        cout<<id1<<" "<<nname<<endl;
+        cout<<notec<<endl;
+    }
+    
+};
+
+
+void addnote(const string& filename); 
+void existlogin();
+void delnote(const string& filename);
+void modifynote(const string& filename);
+void displaynote(const string& filename);
+
+
+string generateFileName(int userId) {
+    return "todolist_" + to_string(userId) + ".dat";
+}
+
+
+
+void addnote(const string& filename){
+        
+        
+        ofstream fotodo(filename, ios::app | ios::binary);
+        todolist t1;
+        t1.input1();
+        fotodo.write((char*)&t1,sizeof(todolist));
+        fotodo.close();
+        int cont;
+        cout<<"Do You want to Continue?\n if yes press 1 or else press any to exit  "<<endl;
+        cin>>cont;
+        if(cont==1){
+            int contop;
+            cout<<"Select from the following option: "<<endl;
+            cout<<"1. DELETE NOTE \n 2. MODIFY NOTE \n 3. DISPLAY NOTE \n 4. LOGOUT"<<endl;
+            cin>>contop;
+            switch(contop){
+                case 1:
+                    delnote(filename);
+                    break;
+                case 2:
+                    modifynote(filename);
+                    break;
+                case 3:
+                    displaynote(filename);
+                    break;
+                case 4:
+                    cout<<"LOGGED OUT"<<endl;
+                    break;
+            }
+        }
+
+        else{
+            cout<<"EXITED"<<endl;
+        }
+}
+void delnote(const string& filename){
+    ifstream fin(filename, ios::in | ios::binary);
+    ofstream fotodo("temp.dat", ios::app | ios::binary);
+    int pid;
+    cout<<"Enter Note ID"<<endl;
+    cin>>pid;
+    bool found=false;
+    todolist obj;
+    while(!fin.eof()){
+        fin.read((char*)&obj,sizeof(todolist));
+        if(obj.rpid()==pid){
+            found=true;
+        }
+        else{
+            fotodo.write((char*)&obj, sizeof(todolist));
+        }
+    }
+    if(found==false)
+        cout<<"Note NOT FOUND"<<endl;
+    fin.close();
+    fotodo.close();
+    remove(filename.c_str());
+    rename("temp.dat", filename.c_str());
+    int cont;
+    cout<<"Do You want to Continue?\n if yes press 1 or else press any to exit  "<<endl;
+        cin>>cont;
+        if(cont==1){
+            int contop;
+            cout<<"Select from the following option: "<<endl;
+            cout<<"1. ADD NOTE \n 2. MODIFY NOTE \n 3. DISPLAY NOTE \n 4. LOGOUT"<<endl;
+            cin>>contop;
+            switch(contop){
+                case 1:
+                    addnote(filename);
+                    break;
+                case 2:
+                    modifynote(filename);
+                    break;
+                case 3:
+                    displaynote(filename);
+                    break;
+                case 4:
+                    cout<<"LOGGED OUT"<<endl;
+                    break;
+            }
+        }
+
+        else{
+            cout<<"EXITED"<<endl;
+        }
+
+}
+void modifynote(const string& filename){
+    fstream fotodo(filename, ios::in | ios::out | ios::binary);
+    int noteid;
+    cout<<"Enter Note Id of the note you want to modify"<<endl;
+    cin>>noteid;
+    bool found=false;
+    todolist t2;
+    while(!fotodo.eof()){
+        fotodo.read((char*)&t2 , sizeof(todolist));
+        if(t2.rpid()==noteid){
+            t2.input1();
+            fotodo.seekg(-sizeof(todolist),ios::cur);
+            fotodo.write((char*)&t2,sizeof(todolist));
+            break;
+        }
+    }
+    fotodo.close();
+}
+void displaynote(const string & filename){
+    ifstream fin(filename, ios::in | ios::binary);
+    todolist t3;
+    while (fin.read((char*)&t3, sizeof(todolist))) {
+    t3.display1();
+}
+    fin.close();
+}
+void adduser(){
+    fstream flogin("loginpage.dat", ios::in | ios::binary);
+    bool condition = false;
+    int logi;
+    login l1;
+    l1.input();
+    if (flogin) {
+        login temp;
+        while (flogin.read((char*)&temp, sizeof(login))) {
+            if (temp.retlogin() == l1.retlogin()) {
+                cout <<"User already exists"<< endl;
+                condition = true;
+                int yn;
+                cout<<"Do you want to login \n If YES Press 1 or Press any for NO"<<endl;
+                cin>>yn;
+                if(yn==1){
+                existlogin();
+                }else{
+                cout<<"EXITED"<<endl;
+                }
+                break;
+            }
+        }
+        flogin.close();
+        
+        }
+
+    if (condition==false) {
+        ofstream flogin("loginpage.dat", ios::app | ios::binary);
+        flogin.write((char*)&l1, sizeof(login));
+        cout << "Account Created Successfully" << endl;
+        flogin.close();
+        int yn;
+        cout<<"Do you want to login \n If YES Press 1 or Press any for NO"<<endl;
+        cin>>yn;
+        if(yn==1){
+            existlogin();
+        }else{
+            cout<<"EXITED"<<endl;
+        }
+    }
+}
+void existlogin(){
+    int id;
+    int pass;
+    cout<<"Enter Your Login ID"<<endl;
+    cin>>id;
+    cout<<"Enter PassWord"<<endl;
+    cin>>pass;
+    ifstream flogon("loginpage.dat", ios::in | ios::binary);
+    login l1;
+    while(!flogon.eof()){
+        flogon.read((char*)&l1,sizeof(login));
+        if(l1.retlogin()==id && l1.retpass()==pass){
+                l1.displaymsg();
+                string filename=generateFileName(id);
+                todolist t1;
+                t1.disp();
+                switch(t1.retop()){
+                    case 1:
+                        addnote(filename);
+                        break;
+                    case 2:
+                        delnote(filename);
+                        break;
+                    case 3:
+                        modifynote(filename);
+                        break;
+                    case 4:
+                        displaynote(filename);
+                        break;
+                    case 0:
+                        break;
+                        
+                }
+        }
+        else{
+            int wcredentials;
+            cout<<"WRONG CREDENTIALS!!!"<<endl;
+            cout<<"Do you want to retry!! \n if yes press 1 otherwise press 0"<<endl;
+            cin>>wcredentials;
+            switch(wcredentials){
+                case 1:
+                    existlogin();
+                    break;
+                case 2:
+                    break;
+            }
+            break;
+        }
+    }
+}
+int main(){
+    int option;
+    cout << R"(
+
+         +---------------------------------------------------------------------+
+         |  _______  ____     _____    ____     _       _____   _____  _______  |
+         | |__   __|/ __ \   |  __ \  / __ \   | |     |_   _| / ____||__   __| |
+         |    | |  | |  | |  | |  | || |  | |  | |       | |  | (___     | |    |
+         |    | |  | |  | |  | |  | || |  | |  | |       | |   \___ \    | |    |
+         |    | |  | |__| |  | |__| || |__| |  | |____  _| |_  ____) |   | |    |
+         |    |_|   \____/   |_____/  \____/   |______||_____||_____/    |_|    |
+         |                                                                      |
+          +----------------------------------------------------------------------+
+
+      
+)" << '\n';
+
+    cout<<R"(   
+                  +--------------------------------------+
+                 | Select Option:                       |
+                 | 1. Add new User                      |
+                 | 2. Login                             |
+                 | 0. Exit                              |
+                 +--------------------------------------+)"<<endl;
+    cin>>option;  
+   
+    switch(option){
+        case 1:
+            adduser();
+            break;
+        case 2:
+            existlogin();
+            break;
+        case 0:
+            exit(0);
+    }
+    
+    return 0;
+}   
