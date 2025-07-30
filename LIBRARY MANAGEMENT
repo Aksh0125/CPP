@@ -1,0 +1,342 @@
+#include<iostream>
+#include<fstream>
+using namespace std;
+class Memberlogin{
+    int m_login_id;
+    int m_password;
+    public:
+    void input(){
+        cout<<"Enter Login id"<<endl;
+        cin>>m_login_id;
+    
+        cout<<"Enter Password"<<endl;
+        cin>>m_password;
+    }
+    void displaymsg(){
+        cout<<"SUCCESFULLY LOGGED INN"<<endl;
+    }
+    int retlogin(){
+        return m_login_id;
+    }
+    int retpass(){
+        return m_password;
+    }
+};
+class Librarianlogin{
+    int l_login_id;
+    int l_password;
+    public:
+    void input(){
+        cout<<"Enter Login id"<<endl;
+        cin>>l_login_id;
+    
+        cout<<"Enter Password"<<endl;
+        cin>>l_password;
+    }
+    void displaymsg(){
+        cout<<"SUCCESFULLY LOGGED INN"<<endl;
+    }
+    int retlogin(){
+        return l_login_id;
+    }
+    int retpass(){
+        return l_password;
+    }
+};
+class Book{
+    string b_name;
+    string a_name;
+    string genre;
+    string publisher;
+    int p_date;
+    int book_id;
+    public:
+    Book(){
+        b_name="";
+        a_name="";
+        genre="";
+        publisher="";
+        p_date=0;
+    }
+    void input(){
+        cout<<"Enter Book ID"<<endl;
+        cin>>book_id;
+        cin.ignore();
+        cout<<"Enter Book Name:"<<endl;
+        getline(cin,b_name);
+        cout<<"Enter Author Name: "<<endl;
+        getline(cin,a_name);
+        cout<<"Enter Genre: "<<endl;
+        getline(cin,genre);
+        cout<<"Enter Publisher: "<<endl;
+        getline(cin, publisher);
+        cout<<"Enter Publishing date(only year):"<<endl;
+        cin>>p_date;
+    }
+    void display(){
+        cout<<b_name<<" "<<a_name<<" "<<genre<<" "<<endl;
+        cout<<publisher<<" "<<p_date<<endl;
+    }
+    int retbookid(){
+        return book_id;
+    }
+};
+class Inventory{
+    int total;
+    int issued;
+    int available;
+    int book_id;
+    public:
+    void inventory_input(){
+        cout<<"Enter Book ID again:"<<endl;
+        cin>>book_id;
+        cout<<"Enter Number of Total Copies"<<endl;
+        cin>>total;
+        cout<<"Enter Number of Issued Copies"<<endl;
+        cin>>issued;
+        cout<<"Enter Number of Available Copies"<<endl;
+        cin>>available;
+    }
+    void display_inventory(){
+        cout << "Available Books: " << (total - issued) << endl;
+    }
+    int retbookid() {
+        return book_id;
+    }
+};
+class LibrarianInterface{
+    int l_opt;
+    public:
+    void l_disp(){
+        cout<<"WELCOME"<<endl;
+        cout<<"CHOOSE FROM THE FOLLOWING OPTIONS"<<endl;
+        cout<<"--> ADD BOOK TO INVENTORY"<<endl;
+        cout<<"--> DELETE BOKK FROM INVENTORY"<<endl; 
+        cout<<"--> DISPLAY ALL BOKK IN INVENTORY"<<endl;
+        cout<<"--> ADD MEMBER"<<endl;
+        cout<<"--> DISPLAY ALL MEMBERS"<<endl;
+        cout<<"Enter option number: ";
+    }
+};
+class MemberInterface{};
+void adduser_m(){
+    fstream fMemberlogin("loginpage_m.dat", ios::in | ios::binary);
+    bool condition = false;
+    Memberlogin l1;
+    l1.input();
+    if (fMemberlogin) {
+        Memberlogin temp;
+        while (fMemberlogin.read((char*)&temp, sizeof(Memberlogin))) {
+            if (temp.retlogin() == l1.retlogin()) {
+                cout <<"Member already exists"<< endl;
+                condition = true;
+                break;
+            }
+        }
+        fMemberlogin.close();
+    }
+    if (!condition) {
+        ofstream fMemberlogin("loginpage_m.dat", ios::app | ios::binary);
+        fMemberlogin.write((char*)&l1, sizeof(Memberlogin));
+        cout << "Account Created Successfully" << endl;
+        fMemberlogin.close();
+    }
+}
+void display_inventory_and_books_m() {
+    ifstream fb("book.dat", ios::binary);
+    ifstream fi("inventory.dat", ios::binary);
+    Book b;
+    Inventory inv;
+    cout << "BOOK INFORMATION AND AVAILABILITY:\n";
+    while (fb.read((char*)&b, sizeof(Book)) && fi.read((char*)&inv, sizeof(Inventory))) {
+        b.display();
+        inv.display_inventory();
+        cout << "----------------------\n";
+    }
+    fb.close();
+    fi.close();
+}
+void existinglogin_m(){
+    int id;
+    int pass;
+    cout<<"Enter Your Login ID"<<endl;
+    cin>>id;
+    cout<<"Enter PassWord"<<endl;
+    cin>>pass;
+    ifstream fMemberlogon("loginpage_m.dat", ios::in | ios::binary);
+    Memberlogin l1;
+    bool found = false;
+    while(fMemberlogon.read((char*)&l1,sizeof(Memberlogin))){
+        if(l1.retlogin()==id && l1.retpass()==pass){
+            l1.displaymsg();
+            display_inventory_and_books_m();
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cout<<"WRONG CREDENTIALS!!!"<<endl;
+    }
+    fMemberlogon.close();
+}
+void adduser_l(){
+    fstream fLibrarianlogin("loginpage_l.dat", ios::in | ios::binary);
+    bool condition = false;
+    Librarianlogin l1;
+    l1.input();
+    if (fLibrarianlogin) {
+        Librarianlogin temp;
+        while (fLibrarianlogin.read((char*)&temp, sizeof(Librarianlogin))) {
+            if (temp.retlogin() == l1.retlogin()) {
+                cout <<"Librarian ID already exists"<< endl;
+                condition = true;
+                break;
+            }
+        }
+        fLibrarianlogin.close();
+    }
+    if (!condition) {
+        ofstream fLibrarianlogin("loginpage_l.dat", ios::app | ios::binary);
+        fLibrarianlogin.write((char*)&l1, sizeof(Librarianlogin));
+        cout << "Account Created Successfully" << endl;
+        fLibrarianlogin.close();
+    }
+}
+void display_all_books_l() {
+    ifstream fb("book.dat", ios::binary);
+    ifstream fi("inventory.dat", ios::binary);
+    Book b;
+    Inventory inv;
+    cout << "ALL BOOKS IN INVENTORY:\n";
+    while (fb.read((char*)&b, sizeof(Book)) && fi.read((char*)&inv, sizeof(Inventory))) {
+        b.display();
+        inv.display_inventory();
+        cout << "----------------------\n";
+    }
+    fb.close();
+    fi.close();
+}
+void add_book_to_inventory() {
+    Book b;
+    Inventory inv;
+    b.input();
+    inv.inventory_input();
+    ofstream fb("book.dat", ios::binary | ios::app);
+    fb.write((char*)&b, sizeof(Book));
+    fb.close();
+    ofstream fi("inventory.dat", ios::binary | ios::app);
+    fi.write((char*)&inv, sizeof(Inventory));
+    fi.close();
+    cout << "Book added to inventory.\n";
+}
+void delete_book_from_inventory() {
+    int bookId;
+    cout << "Enter Book ID to delete from inventory: ";
+    cin >> bookId;
+    ifstream fb("book.dat", ios::binary);
+    ofstream fbTemp("temp_book.dat", ios::binary);
+    Book b;
+    bool found = false;
+    while (fb.read((char*)&b, sizeof(Book))) {
+        if (b.retbookid() != bookId) {
+            fbTemp.write((char*)&b, sizeof(Book));
+        } else {
+            found = true;
+        }
+    }
+    fb.close();
+    fbTemp.close();
+    remove("book.dat");
+    rename("temp_book.dat", "book.dat");
+    ifstream fi("inventory.dat", ios::binary);
+    ofstream fiTemp("temp_inventory.dat", ios::binary);
+    Inventory inv;
+    while (fi.read((char*)&inv, sizeof(Inventory))) {
+        if (inv.retbookid() != bookId) {
+            fiTemp.write((char*)&inv, sizeof(Inventory));
+        }
+    }
+    fi.close();
+    fiTemp.close();
+    remove("inventory.dat");
+    rename("temp_inventory.dat", "inventory.dat");
+    if (found)
+        cout << "Book successfully deleted."<<endl;
+    else
+        cout << "Book ID not found.\n";
+}
+void display_all_members() {
+    ifstream fMemberlogin("loginpage_m.dat", ios::binary);
+    Memberlogin m;
+    cout << "ALL REGISTERED MEMBERS:\n";
+    while (fMemberlogin.read((char*)&m, sizeof(Memberlogin))) {
+        cout << "Login ID: " << m.retlogin() << endl;
+    }
+    fMemberlogin.close();
+}
+void existinglogin_l(){
+    int id;
+    int pass;
+    cout<<"Enter Your Login ID"<<endl;
+    cin>>id;
+    cout<<"Enter PassWord"<<endl;
+    cin>>pass;
+    ifstream fLibrarianlogon("loginpage_l.dat", ios::in | ios::binary);
+    Librarianlogin l1;
+    bool found = false;
+    while(fLibrarianlogon.read((char*)&l1,sizeof(Librarianlogin))){
+        if(l1.retlogin()==id && l1.retpass()==pass){
+            l1.displaymsg();
+            int choice;
+            do {
+                LibrarianInterface li;
+                li.l_disp();
+                cin >> choice;
+                switch(choice) {
+                    case 1: add_book_to_inventory(); break;
+                    case 2: delete_book_from_inventory(); break;
+                    case 3: display_all_books_l(); break;
+                    case 4: adduser_m(); break;
+                    case 5: display_all_members(); break;
+                }
+            } while(choice >= 1 && choice <= 5);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cout<<"WRONG CREDENTIALS!!!"<<endl;
+    }
+    fLibrarianlogon.close();
+}
+int main(){
+    int opt;
+    cout<<"For MEMBER LOGIN PRESS 1 \n For LIBRARIAN LOGIN PRESS 2"<<endl;
+    cin>>opt;
+    switch(opt){
+        case 1:{
+            int opt1;
+            cout<<"EXISTING MEMBER LOGIN --> PRESS 1 \n NEW MEMBER --> PRESS ANY"<<endl;
+            cin>>opt1;
+            if(opt1==1){
+                existinglogin_m();
+            }
+            else{
+                cout<<"PLEASE CONTACT LIBRARIAN"<<endl;
+            }
+            break;
+        }
+        case 2:{
+            int opt2;
+            cout<<"NEW LIBRARIAN STAFF--> PRESS 1 \n EXISTING LIBRARIAN STAFF--> PRESS 2";
+            cin>>opt2;
+            if(opt2==1){
+                adduser_l();
+            }
+            if(opt2==2){
+                existinglogin_l();
+            }
+            break;
+        }
+    }
+}
